@@ -1,4 +1,3 @@
-/*
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
@@ -23,9 +22,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const dbUser = await prisma.user.findFirst({
+  const dbUser = await prisma.profile.findFirst({
     where: {
-      id: user.id,
+      kinde_id: user.id,
     },
   })
 
@@ -34,7 +33,7 @@ export async function GET(request: Request) {
   }
 
   // Se o usuário não tiver um customerId no Stripe, pesquisar ou criar um.
-  let customerId = dbUser.stripeCustomerId
+  let customerId = dbUser.stripe_id
   if (!customerId) {
     let searchedCustomer = await stripe.customers.list({
       email: user.email!,
@@ -52,12 +51,12 @@ export async function GET(request: Request) {
     }
 
     // Atualizar o usuário no banco de dados com o customerId do Stripe.
-    await prisma.user.update({
+    await prisma.profile.update({
       where: {
-        id: user.id,
+        kinde_id: user.id,
       },
       data: {
-        stripeCustomerId: customerId,
+        stripe_id: customerId,
       },
     })
   }
@@ -110,13 +109,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const dbUser = await prisma.user.findFirst({
+  const dbUser = await prisma.profile.findFirst({
     where: {
-      id: user.id,
+      kinde_id: user.id,
     },
   })
 
-  if (!dbUser || !dbUser.stripeCustomerId) {
+  if (!dbUser || !dbUser.stripe_id) {
     let searchedCustomer = await stripe.customers.list({
       email: user.email!,
       limit: 1,
@@ -128,32 +127,32 @@ export async function POST(request: Request) {
         name: user.given_name + ' ' + user.last_name,
       })
     } else {
-      dbUser!.stripeCustomerId = searchedCustomer.data[0].id
+      dbUser!.stripe_id = searchedCustomer.data[0].id
     }
 
-    await prisma.user.update({
+    await prisma.profile.update({
       where: {
-        id: user.id,
+        kinde_id: user.id,
       },
       data: {
-        stripeCustomerId: dbUser!.stripeCustomerId,
+        stripe_id: dbUser!.stripe_id,
       },
     })
   }
 
   const portalUrl = await stripe.billingPortal.sessions.create({
-    customer: dbUser!.stripeCustomerId!,
+    customer: dbUser!.stripe_id!,
     return_url: `${process.env.KINDE_SITE_URL}/dashboard`,
   })
 
   const subscription = await stripe.subscriptions.list({
-    customer: dbUser!.stripeCustomerId!,
+    customer: dbUser!.stripe_id!,
     limit: 1,
     expand: ['data.default_payment_method', 'data.customer.invoice_settings'],
   })
 
   const payments = await stripe.paymentIntents.list({
-    customer: dbUser!.stripeCustomerId!,
+    customer: dbUser!.stripe_id!,
     limit: 5, // Lista os últimos 5 pagamentos
   })
 
@@ -163,4 +162,3 @@ export async function POST(request: Request) {
     payments: payments.data,
   })
 }
-*/
