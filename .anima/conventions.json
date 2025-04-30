@@ -1,0 +1,14 @@
+{
+  "assetsPath": "public/icons/",
+  "componentLibrary": "none",
+  "componentsPath": "src/components/Forms",
+  "defaultConfigPath": "/Users/allx/.anima",
+  "framework": "react",
+  "language": "typescript",
+  "nextRouterType": "app-router",
+  "projectRoot": "/Users/allx/Documents/Projetos/Chatecom/chatecom-app",
+  "styleguidePath": "",
+  "styling": "tailwind",
+  "tailwindConfigPath": "tailwind.config.ts",
+  "tailwindConfigReuseEnabled": false
+}

@@ -1,0 +1,28 @@
+{
+  "matches": {
+    "synthetic-base-component-396:13773": {
+      "id": "@/components/ui/card#Card",
+      "source": { "type": "auto" }
+    },
+    "synthetic-base-component-396:13775": {
+      "id": "@/components/ui/avatar#Avatar",
+      "source": { "type": "auto" }
+    },
+    "synthetic-component-set-Avatar": {
+      "id": "@/components/ui/avatar#Avatar",
+      "source": { "type": "auto" }
+    },
+    "synthetic-component-set-Button": {
+      "id": "@/components/ui/button#Button",
+      "source": { "type": "auto" }
+    },
+    "synthetic-component-set-Card": {
+      "id": "src/components/Forms/UploadArea/UploadArea#Card",
+      "source": {
+        "author": "Andres Alonso ",
+        "matchedAt": 1734442314243,
+        "type": "manual"
+      }
+    }
+  }
+}

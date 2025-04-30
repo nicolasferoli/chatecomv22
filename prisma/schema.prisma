@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Chat {
+  id              String          @id
+  user_id         String
+  name            String
+  bot_name        String
+  bot_picture     String?
+  description     String?
+  theme           String? // Social media theme (e.g., "Instagram", "Twitter", etc.)
+  prompt          Json? // Store product_info and audience_info as JSON
+  template        String? // Template information
+  type            String? // Chat type
+  messages        Message[]
+  variables       Variable[] // Renamed from answers
+  action_logs     ChatActionLog[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  domain          Json?
+  seo_title       String?
+  seo_description String?
+  favicon_url     String?
+  share_image     String?
+  facebook_id     String?
+  google_tag      String?
+  tiktok_ads      String?
+  status          String?
+  verified        Boolean?
+  hasNotifySound  Boolean?        @default(false)
+
+  @@map("chats")
+}
+
+enum MessageTypeEnum {
+  text
+  image
+  audio
+  embed
+  buttons
+  section
+  question
+  redirect
+}
+
+enum MessageFromEnum {
+  user
+  bot
+}
+
+model Message {
+  id              String          @id @default(cuid())
+  type            MessageTypeEnum // 'text', 'question', 'audio', 'image', 'redirect'
+  content         Json // Stores content as JSON
+  from            MessageFromEnum @default(bot)
+  chat            Chat            @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId          String
+  variable        Variable?       @relation(fields: [variableId], references: [id]) // One-to-one relation with Variable
+  variableId      String?         @unique
+  hasDynamicDelay Boolean         @default(true)
+  delayValue      Int             @default(1000)
+  position        Int             @default(autoincrement())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([chatId, position], name: "messages_chat_position_idx")
+  @@map("messages")
+}
+
+model Variable {
+  id        String   @id @default(cuid())
+  name      String
+  value     String
+  chatId    String
+  runId     String
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  message   Message?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chatId])
+  @@index([runId])
+  @@map("variables")
+}
+
+enum QuestionsType {
+  text
+  email
+  cpf
+  whatsapp
+  number
+}
+
+enum ChatAction {
+  viewed
+  answered_question
+  flux_completed
+  clicked_button
+  clicked_link
+}
+
+model ChatActionLog {
+  id                   String         @id @default(uuid())
+  chatId               String
+  chat                 Chat           @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  action               ChatAction
+  question_type        QuestionsType?
+  question_variable    String?
+  question_answer      String?
+  question_text        String?
+  button_question      String?
+  button_answer        String?
+  clicked_link_url     String?
+  flux_completed_value Boolean?
+
+  @@map("chat_action_logs")
+}
+
+model Domain {
+  id        String   @id @default(cuid())
+  name      String
+  status    String
+  chat_id   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("domains")
+}
+
+enum DefaultPlans {
+  monthly
+  yearly
+}
+
+model Profile {
+  id                    String        @id @default(uuid())
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+  imported_default_plan DefaultPlans?
+  kinde_id              String
+  stripe_id             String
+  email                 String
+
+  @@unique([kinde_id])
+  @@index([email])
+  @@index([stripe_id])
+  @@map("profiles")
+}
+
+enum SubEventType {
+  sub_confirmed
+  sub_cancelled
+}
+
+model SubscriptionEvents {
+  id            String       @id @default(uuid())
+  kinde_id      String
+  event_type    SubEventType
+  created_at    DateTime     @default(now())
+  name          String?
+  email         String?
+  gateway       String?
+  plan          String?
+  payment_value Float?
+
+  @@index([kinde_id])
+}
